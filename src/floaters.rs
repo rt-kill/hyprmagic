@@ -92,13 +92,20 @@ pub fn kill(name: &str) -> Result<()> {
 }
 
 /// Two-press kill: first press shows confirm dialog, second kills all.
-pub fn safe_kill(name: &str, confirm_cmd: &str) -> Result<()> {
+pub fn safe_kill(name: &str, confirm_cmd: &str, on_empty: Option<&str>) -> Result<()> {
     let ws_name = format!("special:{name}");
     let clients = hyprland::get_clients()?;
 
     // Check if workspace has any windows at all
     let has_clients = clients.iter().any(|c| c.workspace.name == ws_name);
     if !has_clients {
+        if let Some(cmd) = on_empty {
+            let cmd = cmd.replace("{name}", name);
+            std::process::Command::new("sh")
+                .args(["-c", &cmd])
+                .spawn()
+                .map_err(|e| crate::error::Error::Other(format!("on-empty exec: {e}")))?;
+        }
         return Ok(());
     }
 

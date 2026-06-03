@@ -29,7 +29,7 @@ fn run(cmd: Command) -> error::Result<()> {
         } => floaters::toggle(&name, &class, &launch_cmd),
         Command::Yank { name } => floaters::yank(&name),
         Command::Kill { name } => floaters::kill(&name),
-        Command::SafeKill { name, confirm_cmd } => floaters::safe_kill(&name, &confirm_cmd),
+        Command::SafeKill { name, confirm_cmd, on_empty } => floaters::safe_kill(&name, &confirm_cmd, on_empty.as_deref()),
         Command::Waybar {
             monitor,
             icons,

@@ -39,6 +39,9 @@ pub enum Command {
         /// Confirm dialog command template ({name} is replaced with workspace name)
         #[arg(long, value_name = "CMD", default_value = "confirm_dialog -b 551111 safe-kill-confirm 'Kill all windows?' hyprmagic kill {name}")]
         confirm_cmd: String,
+        /// Command to run if the workspace is empty (no clients)
+        #[arg(long, value_name = "CMD")]
+        on_empty: Option<String>,
     },
 
     /// Long-running Waybar JSON output for special workspace indicators
