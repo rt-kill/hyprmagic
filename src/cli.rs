@@ -9,14 +9,15 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Command {
-    /// Toggle a special workspace; launch the app if empty
+    /// Toggle a special workspace. With no class/launch_cmd, just shows/hides
+    /// the workspace. With both, exec's the launch command into it when empty.
     Toggle {
         /// Special workspace name
         name: String,
-        /// Window class to match
-        class: String,
-        /// Launch command and arguments
-        #[arg(trailing_var_arg = true, required = true)]
+        /// Optional window class (reserved; currently unused)
+        class: Option<String>,
+        /// Optional launch command (exec'd into the workspace when it's empty)
+        #[arg(trailing_var_arg = true)]
         launch_cmd: Vec<String>,
     },
 

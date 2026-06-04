@@ -32,8 +32,14 @@ fn other_monitor_showing(name: &str) -> Result<Option<String>> {
         .map(|m| m.name))
 }
 
-/// Toggle special workspace; launch the app if it has no windows.
-pub fn toggle(name: &str, _class: &str, launch_cmd: &[String]) -> Result<()> {
+/// Toggle a special workspace. If `launch_cmd` is non-empty and the workspace
+/// is empty, the command is exec'd into it; otherwise the workspace's
+/// visibility is toggled. With no launch_cmd, this is a pure show/hide.
+pub fn toggle(name: &str, _class: Option<&str>, launch_cmd: &[String]) -> Result<()> {
+    if launch_cmd.is_empty() {
+        // Pure toggle — no app to launch
+        return hyprland::toggle_special_workspace(name);
+    }
     let addrs = clients_in_special(name)?;
     if addrs.is_empty() {
         let cmd = shell_words(launch_cmd);
@@ -79,7 +85,12 @@ pub fn kill(name: &str) -> Result<()> {
     let addrs = clients_in_special(name)?;
     let commands: Vec<String> = addrs
         .iter()
-        .map(|a| format!("dispatch closewindow address:{a}"))
+        .map(|a| {
+            format!(
+                "dispatch hl.dsp.window.close({{ window = \"address:{}\" }})",
+                hyprland::lua_str(a)
+            )
+        })
         .collect();
     ipc::dispatch_batch(&commands)?;
 

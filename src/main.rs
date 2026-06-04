@@ -26,7 +26,7 @@ fn run(cmd: Command) -> error::Result<()> {
             name,
             class,
             launch_cmd,
-        } => floaters::toggle(&name, &class, &launch_cmd),
+        } => floaters::toggle(&name, class.as_deref(), &launch_cmd),
         Command::Yank { name } => floaters::yank(&name),
         Command::Kill { name } => floaters::kill(&name),
         Command::SafeKill { name, confirm_cmd, on_empty } => floaters::safe_kill(&name, &confirm_cmd, on_empty.as_deref()),

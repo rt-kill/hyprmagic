@@ -77,37 +77,69 @@ fn check_dispatch_response(response: &str) -> Result<()> {
     Ok(())
 }
 
+/// Escape a string for safe inclusion inside a Lua "..." literal.
+pub(crate) fn lua_str(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 2);
+    for c in s.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            _ => out.push(c),
+        }
+    }
+    out
+}
+
 pub fn toggle_special_workspace(name: &str) -> Result<()> {
-    let resp = ipc::dispatch(&format!("dispatch togglespecialworkspace {name}"))?;
+    let resp = ipc::dispatch(&format!(
+        "dispatch hl.dsp.workspace.toggle_special(\"{}\")",
+        lua_str(name)
+    ))?;
     check_dispatch_response(&resp)
 }
 
 pub fn move_to_workspace_silent(ws_name: &str, address: &str) -> Result<()> {
     let resp = ipc::dispatch(&format!(
-        "dispatch movetoworkspacesilent {ws_name},address:{address}"
+        "dispatch hl.dsp.window.move({{ workspace = \"{}\", follow = false, window = \"address:{}\" }})",
+        lua_str(ws_name),
+        lua_str(address)
     ))?;
     check_dispatch_response(&resp)
 }
 
 pub fn focus_window(address: &str) -> Result<()> {
-    let resp = ipc::dispatch(&format!("dispatch focuswindow address:{address}"))?;
+    let resp = ipc::dispatch(&format!(
+        "dispatch hl.dsp.focus({{ window = \"address:{}\" }})",
+        lua_str(address)
+    ))?;
     check_dispatch_response(&resp)
 }
 
 pub fn focus_monitor(name: &str) -> Result<()> {
-    let resp = ipc::dispatch(&format!("dispatch focusmonitor {name}"))?;
+    let resp = ipc::dispatch(&format!(
+        "dispatch hl.dsp.focus({{ monitor = \"{}\" }})",
+        lua_str(name)
+    ))?;
     check_dispatch_response(&resp)
 }
 
 #[allow(dead_code)]
 pub fn close_window(address: &str) -> Result<()> {
-    let resp = ipc::dispatch(&format!("dispatch closewindow address:{address}"))?;
+    let resp = ipc::dispatch(&format!(
+        "dispatch hl.dsp.window.close({{ window = \"address:{}\" }})",
+        lua_str(address)
+    ))?;
     check_dispatch_response(&resp)
 }
 
 pub fn exec_in_special(name: &str, command: &str) -> Result<()> {
     let resp = ipc::dispatch(&format!(
-        "dispatch exec [workspace special:{name}] {command}"
+        "dispatch hl.dsp.exec_cmd(\"{}\", {{ workspace = \"special:{}\" }})",
+        lua_str(command),
+        lua_str(name)
     ))?;
     check_dispatch_response(&resp)
 }
